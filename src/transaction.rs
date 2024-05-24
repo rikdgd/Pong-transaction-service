@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Transaction {
-    id: ObjectId,
+    pub id: Option<ObjectId>,
     pub sender_id: ObjectId,
     pub receiver_id: ObjectId,
     pub amount: i64,
@@ -13,7 +13,7 @@ pub struct Transaction {
 }
 impl Transaction {
     pub fn new(
-        id: ObjectId,
+        id: Option<ObjectId>,
         sender_id: ObjectId,
         receiver_id: ObjectId,
         amount: i64,
@@ -21,9 +21,5 @@ impl Transaction {
         description: String
     ) -> Self {
         Self { id, sender_id, receiver_id, amount, time_stamp, description }
-    }
-    
-    pub fn get_id(&self) -> ObjectId {
-        self.id
     }
 }

@@ -1,0 +1,14 @@
+### GET request to example server
+POST http://127.0.0.1:8000/createTransaction
+Content-Type: application/json
+
+{
+  "id": null,
+  "sender_id": "60d5f67e8a317f2d3c4d8f90",
+  "receiver_id": "60d5f67e8a317f2d3c4d8f91",
+  "amount": 20,
+  "time_stamp": "today",
+  "description": "User earned their daily login reward."
+}
+
+###
