@@ -1,28 +1,29 @@
-use mongodb::{
-    bson::oid::ObjectId,
-    bson::doc,
-    Client,
-    Collection
-};
-use rocket::time::format_description::well_known::Iso8601;
+use mongodb::bson::oid::ObjectId;
+use serde::{Deserialize, Serialize};
 
 
-
+#[derive(Serialize, Deserialize, Debug)]
 pub struct Transaction {
     id: ObjectId,
-    pub user_id: ObjectId,
-    pub amount: u64,
-    pub time_stamp: Iso8601,
+    pub sender_id: ObjectId,
+    pub receiver_id: ObjectId,
+    pub amount: i64,
+    pub time_stamp: String,
     pub description: String,
 }
 impl Transaction {
     pub fn new(
         id: ObjectId,
-        user_id: ObjectId,
-        amount: u64,
-        time_stamp: Iso8601,
+        sender_id: ObjectId,
+        receiver_id: ObjectId,
+        amount: i64,
+        time_stamp: String,
         description: String
     ) -> Self {
-        Self { id, user_id, amount, time_stamp, description }
+        Self { id, sender_id, receiver_id, amount, time_stamp, description }
+    }
+    
+    pub fn get_id(&self) -> ObjectId {
+        self.id
     }
 }
