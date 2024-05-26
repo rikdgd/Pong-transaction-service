@@ -1,4 +1,4 @@
 ### GET request to example server
-GET http://localhost:8000/getUserBalance/66507b5eb6b6237937c08e6a
+GET http://localhost:8000/getUserBalance/60d5f67e8a317f2d3c4d8f90
 
 ###
