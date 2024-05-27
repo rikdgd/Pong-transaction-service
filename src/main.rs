@@ -10,6 +10,18 @@ use crate::transaction_service::TransactionService;
 
 
 
+#[get("/getTransaction/<transaction_id>")]
+async fn get_transaction(transaction_id: String) -> String {
+    let service = TransactionService::new().expect("Failed to get mongodb uri.");
+    
+    let obj_id = ObjectId::parse_str(transaction_id).expect("Failed to convert user input to ObjectId");
+    let res = service.get_transaction(obj_id).await.expect("Failed to get a transaction with the given id.");
+    
+    format!("{:?}", res)
+}
+
+
+
 #[get("/postTestTransaction")]
 async fn post_test_transaction() -> String {
     let service = TransactionService::new().expect("Failed to get mongodb uri.");
@@ -49,6 +61,7 @@ async fn get_user_balance(user_id: String) -> String {
 #[launch]
 fn rocket() -> _ {
     rocket::build().mount("/", routes![
+        get_transaction,
         post_test_transaction,
         post_transaction,
         get_user_balance,
