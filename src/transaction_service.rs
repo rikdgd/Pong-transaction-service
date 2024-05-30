@@ -37,9 +37,8 @@ impl TransactionService {
             .database(DB_NAME)
             .collection(COLLECTION_NAME);
 
-        let stringified_id = id.to_string();
         let res = transaction_collection.find_one(
-            doc! { "_id": stringified_id },
+            doc! { "_id": id },
             None
         ).await?;
 
@@ -117,7 +116,7 @@ impl TransactionService {
     }
 }
 
-pub struct UserTransactions {
+struct UserTransactions {
     pub send: Vec<Transaction>,
     pub received: Vec<Transaction>
 }
