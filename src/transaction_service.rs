@@ -71,15 +71,24 @@ impl TransactionService {
         let user_transactions = self.get_user_involved_transactions(user_id)
             .await
             .expect("Failed to get user transactions.");
-        
+
+        TransactionService::calculate_user_balance(user_id, user_transactions)
+    }
+    
+    fn calculate_user_balance(user_id: ObjectId, transaction_list: UserTransactions) -> i64 {
         let mut balance = 0;
-        for received in user_transactions.received {
-            balance += received.amount;
-        }
-        for send in user_transactions.send {
-            balance -= send.amount;
-        }
         
+        for received in transaction_list.received {
+            if received.receiver_id == user_id {
+                balance += received.amount;
+            }
+        }
+        for send in transaction_list.send {
+            if send.sender_id == user_id {
+                balance -= send.amount;
+            }
+        }
+
         balance
     }
 
@@ -123,5 +132,40 @@ struct UserTransactions {
 impl UserTransactions {
     pub fn new(send: Vec<Transaction>, received: Vec<Transaction>) -> Self {
         Self { send, received }
+    }
+}
+
+
+#[cfg(test)]
+mod tests {
+    use crate::transaction::Transaction;
+    use mongodb::bson::oid::ObjectId;
+    use crate::transaction_service::{TransactionService, UserTransactions};
+
+    #[test]
+    fn test_calculate_balance() {
+        let user_a_id = ObjectId::new();
+        let user_b_id = ObjectId::new();
+        
+        let send_transactions = vec![
+            Transaction::new(None, user_a_id, user_b_id, 30, "now".to_string(), String::new()),
+            Transaction::new(None, user_a_id, user_b_id, 70, "now".to_string(), String::new()),
+        ];
+
+        let received_transactions = vec![
+            Transaction::new(None, user_b_id, user_a_id, 20, "now".to_string(), String::new()),
+            Transaction::new(None, user_b_id, user_a_id, 50, "now".to_string(), String::new()),
+
+            // Completely unrelated transaction, would normally never even arrive here
+            Transaction::new(None, ObjectId::new(), ObjectId::new(), 20, "now".to_string(), String::new()),
+        ];
+        let user_transactions = UserTransactions::new(send_transactions, received_transactions);
+        
+        let expected_balance_user_a: i64 = -30;  // balance = -30 - 70 + 20 + 50
+        
+        
+        let calculated_balance = TransactionService::calculate_user_balance(user_a_id, user_transactions);
+        
+        assert_eq!(expected_balance_user_a, calculated_balance);
     }
 }
