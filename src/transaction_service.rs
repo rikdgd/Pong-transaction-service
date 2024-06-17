@@ -55,6 +55,13 @@ impl TransactionService {
     /// Used to create a new transaction in the database, 
     /// returns the _id of the newly created transaction if successful. 
     pub async fn post_transaction(&self, transaction: Transaction) -> Result<String, Box<dyn Error>> {
+        if !self.sender_has_balance(&transaction).await {
+            let error = Box::new(
+                std::io::Error::new(std::io::ErrorKind::InvalidData, "User does not have enough balance to complete the transaction")
+            );
+            return Err(error);
+        }
+        
         let client = Client::with_uri_str(&self.conn_string).await?;
 
         let transaction_collection: Collection<Transaction> = client
@@ -91,7 +98,16 @@ impl TransactionService {
 
         balance
     }
-
+    
+    async fn sender_has_balance(&self, transaction: &Transaction) -> bool {
+        let user_balance = self.get_user_balance(transaction.sender_id).await;
+        if user_balance >= transaction.amount {
+            return true;
+        }
+        
+        false
+    }
+    
     async fn get_user_involved_transactions(&self, user_id: ObjectId) -> Result<UserTransactions, Box<dyn Error>> {
         let mut user_transactions = UserTransactions::new(Vec::new(), Vec::new());
         let client = Client::with_uri_str(&self.conn_string).await?;
