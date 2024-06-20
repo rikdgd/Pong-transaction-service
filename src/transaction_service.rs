@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::env;
 use std::env::VarError;
+use std::{thread, time};
 use futures::TryStreamExt;
 use crate::transaction::Transaction;
 use mongodb::{
@@ -122,6 +123,30 @@ impl TransactionService {
 
 
         Ok(user_transactions)
+    }
+    
+    pub fn get_user_balance_mock(&self, user_id: ObjectId) -> i64 {
+        let second_user_id = ObjectId::new();
+
+        let send = vec![
+            Transaction::new(Some(ObjectId::new()), user_id, second_user_id, 50, "now".to_string(), "testing".to_string()),
+            Transaction::new(Some(ObjectId::new()), user_id, second_user_id, 5345, "now".to_string(), "testing".to_string()),
+            Transaction::new(Some(ObjectId::new()), user_id, second_user_id, 5, "now".to_string(), "testing".to_string()),
+        ];
+        let received = vec![
+            Transaction::new(Some(ObjectId::new()), second_user_id, user_id, 1, "now".to_string(), "testing".to_string()),
+            Transaction::new(Some(ObjectId::new()), second_user_id, user_id, 3000, "now".to_string(), "testing".to_string()),
+            Transaction::new(Some(ObjectId::new()), second_user_id, user_id, 100, "now".to_string(), "testing".to_string()),
+            Transaction::new(Some(ObjectId::new()), second_user_id, user_id, 50, "now".to_string(), "testing".to_string()),
+        ];
+        
+        let mock_transactions = UserTransactions::new(send, received);
+        
+        // simulate load:
+        let delay_time = time::Duration::from_millis(1000);
+        thread::sleep(delay_time);
+        
+        TransactionService::calculate_user_balance(user_id, mock_transactions)
     }
 }
 

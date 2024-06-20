@@ -14,6 +14,13 @@ async fn test_endpoint() -> &'static str {
     "Hello world!"
 }
 
+#[get("/getMockBalance")]
+async fn get_mock_balance() -> String {
+    let service = TransactionService::new().expect("Failed to create transaction service");
+    let balance = service.get_user_balance_mock(ObjectId::new());
+    format!("{balance}")
+}
+
 
 #[get("/getTransaction/<transaction_id>")]
 async fn get_transaction(transaction_id: String) -> String {
@@ -69,6 +76,7 @@ async fn get_user_balance(user_id: String) -> String {
 fn rocket() -> _ {
     rocket::build().mount("/", routes![
         test_endpoint,
+        get_mock_balance,
         get_transaction,
         post_test_transaction,
         post_transaction,
