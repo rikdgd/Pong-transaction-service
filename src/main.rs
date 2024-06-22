@@ -1,11 +1,13 @@
 mod transaction;
 mod transaction_service;
+mod transaction_post_model;
 
 #[macro_use] extern crate rocket;
 
 use mongodb::bson::oid::ObjectId;
 use rocket::serde::json::Json;
 use crate::transaction::Transaction;
+use crate::transaction_post_model::TransactionPostModel;
 use crate::transaction_service::TransactionService;
 
 
@@ -34,7 +36,7 @@ async fn post_test_transaction() -> String {
         ObjectId::new(),
         ObjectId::new(),
         200,
-        "now".to_string(),
+        "Now".to_string(),
         "fake description".to_string()
     );
 
@@ -44,13 +46,14 @@ async fn post_test_transaction() -> String {
 
 
 #[post("/createTransaction", data = "<transaction>")]
-async fn post_transaction(transaction: Json<Transaction>) -> String {
+async fn post_transaction(transaction: Json<TransactionPostModel>) -> String {
     let service = TransactionService::new().expect("Failed to get mongodb uri.");
     
-    let mut parsed_transaction = transaction.into_inner();
-    parsed_transaction.id = None;
-    let new_id = service.post_transaction(parsed_transaction).await.unwrap();
+    let transaction_post_model = transaction.into_inner();
+    let parsed_transaction = transaction_post_model.to_transaction();
     
+    let new_id = service.post_transaction(parsed_transaction).await
+        .expect("Failed to post transaction based on given data.");
     format!("New transaction id: {}", new_id)
 }
 
