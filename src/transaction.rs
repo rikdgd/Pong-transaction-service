@@ -1,5 +1,6 @@
 use mongodb::bson::oid::ObjectId;
 use serde::{Deserialize, Serialize};
+use chrono::prelude::*;
 
 
 
@@ -20,9 +21,11 @@ impl Transaction {
         sender_id: ObjectId,
         receiver_id: ObjectId,
         amount: i64,
-        time_stamp: String,
         description: String
     ) -> Self {
+        let utc: DateTime<Utc> = Utc::now();
+        let time_stamp = utc.to_string();
+
         Self { id, sender_id, receiver_id, amount, time_stamp, description }
     }
 }
